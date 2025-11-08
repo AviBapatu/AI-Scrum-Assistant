@@ -94,19 +94,19 @@ npm run server       # backend (Express)
 
 ## Key Features
 
-1️ **PRD → Jira Ticket Generation**
+1️. **PRD → Jira Ticket Generation**
 - Upload PRD → AI converts to structured Jira stories using Gemini + LangChain.
 - Validated against a **Zod schema**.
 
-2️ **AI-Powered Backlog Refinement**
+2️. **AI-Powered Backlog Refinement**
 - Detects **duplicates** with semantic RAG search.
 - Finds **missing ACs** or **split suggestions**.
 
-3️ **Data-Driven Sprint Planning**
+3️. **Data-Driven Sprint Planning**
 - Calculates **velocity & spillover** using Jira API.
 - Suggests realistic sprint backlog.
 
-4️ **Human-in-the-Loop Dashboard**
+4️. **Human-in-the-Loop Dashboard**
 - Built with **React + Shadcn/ui + React Query**.
 - Approve or reject tickets, automatically sync to Jira.
 
