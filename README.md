@@ -1,11 +1,11 @@
-# 🤖 AI Scrum Assistant
+# AI Scrum Assistant
 *A Multi-Agent, AI-Powered Scrum Companion for Jira*
 
 > A full-stack, agentic AI system that automates backlog refinement, PRD parsing, and sprint planning — built with Node.js, LangChain.js, Google Gemini, Jira API, and a React-based Human-in-the-Loop (HITL) dashboard.
 
 ---
 
-## 🧭 Overview
+## Overview
 
 The **AI Scrum Assistant** is a modern, agentic application designed to act as a *virtual Scrum Master* — simplifying Agile workflows by combining AI orchestration, Jira integration, and semantic intelligence.
 
@@ -21,11 +21,11 @@ Built for MERN developers exploring next-gen AI orchestration, this assistant:
 
 ---
 
-## ⚙️ Core Architecture
+## Core Architecture
 
 The system follows a **Multi-Agent (Compound AI)** architecture — with an *Orchestrator backend* managing specialized agents/tools.
 
-### 🔧 Components
+### Components
 
 | Component | Description |
 |------------|-------------|
@@ -38,7 +38,7 @@ The system follows a **Multi-Agent (Compound AI)** architecture — with an *Orc
 
 ---
 
-## 🧩 Tech Stack
+## Tech Stack
 
 | Layer | Technology | Purpose |
 |--------|-------------|----------|
@@ -51,12 +51,12 @@ The system follows a **Multi-Agent (Compound AI)** architecture — with an *Orc
 
 ---
 
-## 🔐 Authentication Setup
+## Authentication Setup
 
 The system uses **API Token + Basic Auth** (recommended by Atlassian for personal/team tools).
 
 1. Generate a token at  
-   👉 [Atlassian API Tokens](https://id.atlassian.com/manage-profile/security/api-tokens)
+   [Atlassian API Tokens](https://id.atlassian.com/manage-profile/security/api-tokens)
 2. Copy your Jira site name (`https://YOUR_ORG.atlassian.net`)
 3. Add credentials to `.env`:
    ```
@@ -68,7 +68,7 @@ The system uses **API Token + Basic Auth** (recommended by Atlassian for persona
 
 ---
 
-## 🚀 Installation & Setup
+## Installation & Setup
 
 **Note:** The project is not yet implemented. The following are the planned installation steps.
 
@@ -92,27 +92,27 @@ npm run server       # backend (Express)
 
 ---
 
-## 🧠 Key Features
+## Key Features
 
-1️⃣ **PRD → Jira Ticket Generation**
+1️ **PRD → Jira Ticket Generation**
 - Upload PRD → AI converts to structured Jira stories using Gemini + LangChain.
 - Validated against a **Zod schema**.
 
-2️⃣ **AI-Powered Backlog Refinement**
+2️ **AI-Powered Backlog Refinement**
 - Detects **duplicates** with semantic RAG search.
 - Finds **missing ACs** or **split suggestions**.
 
-3️⃣ **Data-Driven Sprint Planning**
+3️ **Data-Driven Sprint Planning**
 - Calculates **velocity & spillover** using Jira API.
 - Suggests realistic sprint backlog.
 
-4️⃣ **Human-in-the-Loop Dashboard**
+4️ **Human-in-the-Loop Dashboard**
 - Built with **React + Shadcn/ui + React Query**.
 - Approve or reject tickets, automatically sync to Jira.
 
 ---
 
-## 🧱 Project Structure
+## Project Structure
 
 ```
 ai-scrum-assistant/
@@ -154,7 +154,7 @@ ai-scrum-assistant/
 
 ---
 
-## 🧩 API Endpoints
+## API Endpoints
 
 | Method | Endpoint | Description |
 |--------|-----------|-------------|
@@ -165,7 +165,7 @@ ai-scrum-assistant/
 
 ---
 
-## 🧰 Development Notes
+## Development Notes
 
 - Use **React Query** for server-state (avoid useState/Redux).  
 - Store all credentials in `.env`.  
@@ -174,7 +174,7 @@ ai-scrum-assistant/
 
 ---
 
-## 🧭 Phase 2 Roadmap
+## Phase 2 Roadmap
 
 | Feature | Status | Planned Enhancements |
 |----------|---------|----------------------|
@@ -185,15 +185,14 @@ ai-scrum-assistant/
 
 ---
 
-## 📚 References
+## References
 
 Based on:  
 **"A Pragmatic Technical Blueprint for the AI Scrum Assistant (2025)"**
 
 ---
 
-## 💡 Author & License
+## Author & License
 
-**Author:** [Your Name]  
-**License:** MIT  
-**Contact:** [your.email@example.com]
+**Author:** MAC  
+**Contact:** anudeepmuppalla@gmail.com
