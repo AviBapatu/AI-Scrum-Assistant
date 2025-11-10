@@ -192,7 +192,7 @@ ai-scrum-assistant/
 ## References
 
 Based on:  
-**"A Pragmatic Technical Blueprint for the AI Scrum Assistant (2025)"**
+**"A Pragmatic Technical Blueprint for the AI Scrum Assistant"**
 
 ---
 
