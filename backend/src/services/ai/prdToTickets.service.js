@@ -1,7 +1,7 @@
-import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { PRDParserSchema } from "../../utils/schemas.js";
 import { PdfReader } from "pdfreader";
 import dotenv from "dotenv";
+import { model } from "../ai/model.service.js";
 dotenv.config();
 
 const extractTextFromPdfBuffer = (pdfBuffer) => {
@@ -40,19 +40,10 @@ export const getSuggestionsFromPRD = async (prdBuffer) => {
 
     console.log(`Extracted PRD text length: ${prdText.length} characters`);
 
-    if (!process.env.GEMINI_API_KEY) {
-      throw new Error("Missing GOOGLE_API_KEY in environment variables.");
-      }
-      console.log(": Using Gemini API Key:", process.env.GEMINI_API_KEY.slice(0, 5) + "****");
-      const model = new ChatGoogleGenerativeAI({
-        apiKey: process.env.GEMINI_API_KEY,
-        model: "gemini-2.0-flash",
-        temperature: 0.4,
-      });
-
+    
       const structuredChain = model.withStructuredOutput(PRDParserSchema);
       console.log("Sending PRD to AI model for processing...");
-      const fullPrompt = `You are a Senior Scrum Master. Analyze the following PRD and convert it into structured Jira stories and tasks. Return JSON only.\n\nPRD:\n${prdText}`;
+      const fullPrompt = `You are a Senior Scrum Master. Analyze the following PRD and convert it into structured Jira stories and tasks. Filter out unwanted info from the PRD Identify th eproject properly. Return JSON only.\n\nPRD:\n${prdText}`;
     const aiResponse = await structuredChain.invoke(fullPrompt);
 
     return aiResponse;
