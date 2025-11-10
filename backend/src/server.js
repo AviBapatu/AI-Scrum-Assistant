@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-// import scrumRoutes from "./routes/scrum.routes.js";
+import scrumRoutes from "./routes/scrum.routes.js";
 
 const app = express();
 
@@ -15,7 +15,7 @@ app.get("/", (req, res) => {
     });
 });
 
-// app.use('/api/v1/scrum', scrumRoutes);
+app.use('/api/v1/scrum', scrumRoutes);
 
 app.use((err, req, res, next) => {
     console.error(err.stack);

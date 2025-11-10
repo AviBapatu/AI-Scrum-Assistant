@@ -1,7 +1,7 @@
 import "dotenv/config"; 
 import app from "./server.js";
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 2000;
 
 function startServer() {
   if (!process.env.GEMINI_API_KEY) {
