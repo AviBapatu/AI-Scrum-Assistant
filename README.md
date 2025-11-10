@@ -1,4 +1,4 @@
-# AI Scrum Assistant
+# AI Scrum Assistant (Development Stage)
 *A Multi-Agent, AI-Powered Scrum Companion for Jira*
 
 > A full-stack, agentic AI system that automates backlog refinement, PRD parsing, and sprint planning — built with Node.js, LangChain.js, Google Gemini, Jira API, and a React-based Human-in-the-Loop (HITL) dashboard.
@@ -16,8 +16,6 @@ Built for MERN developers exploring next-gen AI orchestration, this assistant:
 - Plans **data-driven sprints** based on historical velocity.  
 - Uses **semantic search (RAG)** to detect duplicates and refine backlog quality.  
 - Presents results in a **React + Shadcn/ui dashboard** where humans approve or reject AI suggestions.
-
-**Status:** The project structure has been set up, but the implementation of the features is not yet complete. The files are currently empty placeholders.
 
 ---
 
@@ -44,7 +42,7 @@ The system follows a **Multi-Agent (Compound AI)** architecture — with an *Orc
 |--------|-------------|----------|
 | Backend | **Node.js + Express (ESM)** | Non-blocking orchestrator for AI + API workflows |
 | AI Layer | **LangChain.js + Zod** | Structured JSON output and multi-step orchestration |
-| LLM Provider | **Google Gemini 1.5 Pro** | Tool-calling for PRD → Ticket parsing |
+| LLM Provider | **Google Gemini 2.0 Flash** | Tool-calling for PRD → Ticket parsing |
 | Database | **Chroma (via LangChain)** | Vector embeddings for semantic duplicate detection |
 | Frontend | **React + Vite + Shadcn/ui + React Query (TanStack)** | Modern HITL dashboard |
 | Integration | **jira.js (Version3Client)** | Simplified Jira REST API access |
@@ -69,8 +67,6 @@ The system uses **API Token + Basic Auth** (recommended by Atlassian for persona
 ---
 
 ## Installation & Setup
-
-**Note:** The project is not yet implemented. The following are the planned installation steps.
 
 ```
 # 1. Clone the repository
@@ -106,7 +102,15 @@ npm run server       # backend (Express)
 - Calculates **velocity & spillover** using Jira API.
 - Suggests realistic sprint backlog.
 
-4️. **Human-in-the-Loop Dashboard**
+4. **Sprint Retrospectives & Reporting**
+- Analyzes the results of a closed sprint to auto-generate a summary of progress, burndown stats, and structured **"What Went Well" / "Actionable Insight"** reports.
+- **Data Aggregation and Qualitative Analysis** via dedicated, structured prompt.
+
+5. **AI-Generated Daily Standups**
+- **Automates daily progress** reports by synthesizing Jira status changes, comments, and work logs from the last 24 hours into a concise team or individual summary.
+- **Data Synthesis and Structured Narrative Generation** using JQL query and dedicated standup schema.
+
+6. **Human-in-the-Loop Dashboard**
 - Built with **React + Shadcn/ui + React Query**.
 - Approve or reject tickets, automatically sync to Jira.
 
@@ -194,5 +198,6 @@ Based on:
 
 ## Author & License
 
+*Open To Contribute*
 **Author:** MAC  
 **Contact:** anudeepmuppalla@gmail.com
