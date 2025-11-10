@@ -1,7 +1,4 @@
 import { jiraClient } from "./jira_client.js";
-
-// --- CORE JIRA API FUNCTIONS (CRUD & Search) ---
-
 /**
  * Creates a new Jira issue (Story/Task/Bug) from structured data.
  * @param {object} ticketData - The structured JSON fields object returned by the AI (Part 3).
