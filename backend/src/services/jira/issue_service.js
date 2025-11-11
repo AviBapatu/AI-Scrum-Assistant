@@ -1,4 +1,4 @@
-import { jiraClient } from "./jira_client.js";
+import { jiraClient } from "./jiraClient.js";
 /**
  * Creates a new Jira issue (Story/Task/Bug) from structured data.
  * @param {object} ticketData - The structured JSON fields object returned by the AI (Part 3).

@@ -40,10 +40,9 @@ export const getSuggestionsFromPRD = async (prdBuffer) => {
 
     console.log(`Extracted PRD text length: ${prdText.length} characters`);
 
-    
-      const structuredChain = model.withStructuredOutput(PRDParserSchema);
-      console.log("Sending PRD to AI model for processing...");
-      const fullPrompt = `You are a Senior Scrum Master. Analyze the following PRD and convert it into structured Jira stories and tasks. Filter out unwanted info from the PRD Identify th eproject properly. Return JSON only.\n\nPRD:\n${prdText}`;
+    const structuredChain = model.withStructuredOutput(PRDParserSchema);
+    console.log("Sending PRD to AI model for processing...");
+    const fullPrompt = `You are a Senior Scrum Master. Analyze the following PRD and convert it into structured Jira stories and tasks. Filter out unwanted info from the PRD Identify th eproject properly. Return JSON only.\n\nPRD:\n${prdText}`;
     const aiResponse = await structuredChain.invoke(fullPrompt);
 
     return aiResponse;

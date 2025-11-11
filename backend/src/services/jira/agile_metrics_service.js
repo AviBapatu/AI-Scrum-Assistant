@@ -1,5 +1,5 @@
-import { jiraClient } from "./jira_client.js";
-import { search } from "./issue_service.js"; // Import search for spillover JQL
+import { jiraClient } from "./jiraClient.js";
+import { search } from "./issueService.js"; // Import search for spillover JQL
 
 // --- METRIC-SPECIFIC FUNCTIONS (Part 2, Section C) ---
 
