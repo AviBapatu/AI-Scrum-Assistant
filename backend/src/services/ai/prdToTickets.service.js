@@ -4,16 +4,12 @@ import dotenv from "dotenv";
 import { model } from "../ai/model.service.js";
 dotenv.config();
 
-// Attempt to robustly extract and sanitize JSON returned by the model
 const extractJsonFromText = (text) => {
   if (!text) return null;
-  // Prefer fenced ```json ... ```
   const fencedJson = text.match(/```json\s*([\s\S]*?)```/i);
   if (fencedJson && fencedJson[1]) return fencedJson[1].trim();
-  // Fallback to any fenced block ``` ... ```
   const fenced = text.match(/```\s*([\s\S]*?)```/);
   if (fenced && fenced[1]) return fenced[1].trim();
-  // Fallback to substring between first { and last }
   const first = text.indexOf("{");
   const last = text.lastIndexOf("}");
   if (first !== -1 && last !== -1 && last > first) {
@@ -23,11 +19,7 @@ const extractJsonFromText = (text) => {
 };
 
 const removeTrailingCommas = (s) =>
-  s
-    // remove trailing commas in objects
-    .replace(/,\s*}/g, "}")
-    // remove trailing commas in arrays
-    .replace(/,\s*]/g, "]");
+  s.replace(/,\s*}/g, "}").replace(/,\s*]/g, "]");
 
 const normalizeQuotes = (s) => s.replace(/[“”]/g, '"').replace(/[‘’]/g, "'");
 
@@ -143,12 +135,10 @@ export const getSuggestionsFromPRD = async (prdBuffer) => {
                           "jira_issues": []
                         }
                         ### 🧾 PRD Input: ${prdText}`;
-    // Primary path: rely on structured output
     try {
       const aiResponse = await structuredChain.invoke(fullPrompt);
       return aiResponse;
     } catch (primaryErr) {
-      // Fallback: parse the model's raw text, then validate against schema
       console.warn(
         "Structured output parse failed, attempting fallback JSON repair..."
       );
@@ -163,7 +153,6 @@ Return ONLY valid JSON that matches the required schema. Do not include any expl
     }
   } catch (error) {
     console.error("Error processing PRD:", error?.message || error);
-    // Clean, consistent error up the stack
     throw new Error("Failed to generate structured suggestions from PRD.");
   }
 };
