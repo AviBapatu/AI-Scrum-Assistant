@@ -88,3 +88,14 @@ export const PRDParserSchema = z.object({
     .optional()
     .describe("Flat list for independent issues without Epic hierarchy."),
 });
+
+export const AISuggestionsSchema = z.object({
+  success: z.boolean().optional(),
+  message: z.string().optional(),
+  data: PRDParserSchema, // reuse existing epics/jira_issues shape
+});
+
+export const PushAISuggestionsBodySchema = z.object({
+  projectKey: z.string().min(2, "projectKey is required"),
+  suggestions: AISuggestionsSchema,
+});
