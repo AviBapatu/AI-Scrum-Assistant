@@ -1,6 +1,9 @@
 import express from "express";
 import multer from "multer";
-import { generateSuggestions } from "../controllers/scrum.controller.js";
+import {
+  generateSuggestions,
+  pushAISuggestionsToJira,
+} from "../controllers/scrum.controller.js";
 
 const storage = multer.memoryStorage();
 const upload = multer({
@@ -11,5 +14,6 @@ const upload = multer({
 const router = express.Router();
 
 router.post("/suggestions", upload.single("prdFile"), generateSuggestions);
+router.post("/pushSuggestionsToJira", pushAISuggestionsToJira);
 
 export default router;
