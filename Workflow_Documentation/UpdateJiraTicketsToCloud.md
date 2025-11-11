@@ -1,76 +1,68 @@
-# Integrate Updated AI Ticket Schema with Jira
+# Push AI Suggestions to Jira (Team-managed)
 
-## Overview
+## Summary
 
-Update backend logic to consume the new AI schema (with `project_key`, richer issue fields, optional epic structure) and create Jira tickets accordingly.
+Create a POST route to accept the AI output and create Jira issues in Team-managed projects with the hierarchy: Epic → Story (parent=epic) → Sub-task (parent=story). Use existing `jiraClient.js` and add a dedicated transformer + service with id mapping, validation via Zod, and partial-failure reporting.
 
-## Current State
+## Key Decisions
 
-- `/api/v1/scrum/suggestions` now returns `{ project_key, project_title, epics?, jira_issues }`
-- Jira issue service exposes `createTicket(fields)` expecting Jira REST format
-- No endpoint yet to push AI issues to Jira
-- `scrum.controller.js` still only has `generateSuggestions`
-- Need to handle richer fields (assignee, labels, parent, epic_name, story_points, acceptance_criteria)
+- Team-managed linking: stories use `parent` pointing to Epic; sub-tasks use `parent` pointing to Story
+- Epic name from `epic.title`; Story fields from `summary`, `description`, `priority`, `story_points`
+- Sub-issues become Sub-tasks under their Story
+- Project is provided via request (e.g., `projectKey`) rather than hardcoded
+
+## Files To Change or Add
+
+- `backend/src/controllers/scrum.controller.js`: add route handler to accept AI suggestions
+- `backend/src/services/jira/issue_service.js`: add hierarchical creation function using `jiraClient`
+- `backend/src/services/jira/transformers/ticketTransformer.service.js`: implement payload mappers for Epic/Story/Sub-task
+- `backend/src/utils/schemas.js`: add/extend Zod schema to validate incoming AI suggestions
+- `backend/src/services/jira/jiraClient.js`: ensure it exposes `createIssue`, `bulkCreate?` (if not, single create with retries)
+- (Optional) `backend/src/routes/index.js` or wherever routes are registered
+
+## Route Contract
+
+- Method: POST `/api/jira/push-ai-suggestions`
+- Body: `{ projectKey: string, suggestions: <AI JSON you shared> }`
+- Response: `{ success: boolean, created: { epics: [...], stories: [...], subtasks: [...] }, errors: [...] }`
 
 ## Implementation Steps
 
-### 1. Fix Existing Import + Cleanups
+1. Validate request body (projectKey required; suggestions shape validated against a Zod schema aligned to your AI output)
+2. For each Epic in `suggestions.data.epics`:
 
-- Ensure `issue_service.js` imports `jiraClient.js`
-- Remove unused `success` import in `scrum.controller.js`
+- Create Epic issue; map fields; store `epicId`
 
-### 2. Ticket Transformation Utilities
+3. For each Story under Epic:
 
-- Create `backend/src/services/jira/ticketTransformer.service.js`
-- Functions:
-- `mapPriority(priority?)`
-- `mapIssueType(type)` (ensure valid Jira values)
-- `buildDescription(description, acceptanceCriteria?)`
-- `transformAITicketToJira(aiTicket, projectKey)` producing Jira `fields`
-- Optionally `transformEpic(epic, projectKey)`
-- Handle optional fields: assignee → `assignee.id` or `assignee.accountId`? (use `assignee` as email via `assignee: { name }` or `accountId`? need to choose: default to `assignee: { name: aiTicket.assignee }`)
-- Map `story_points` to `customfield_10016` (default story points field) if provided
-- For epics, set `issuetype` → Epic and use `customfield_10011` or `epic_name`
+- Create Story with `parent: { id: epicId }` (Team-managed epic child)
+- Map `priority` and `story_points` (use `customfield_*` for Story Points if configured; else fallback none)
 
-### 3. Controller Logic
+4. For each Sub-issue under Story:
 
-- Add `createTicketsInJira` to `scrum.controller.js`
-- Accept body with either:
-- entire AI response `{ project_key, jira_issues, epics? }`
-- optional subset selection (allow `tickets` override?) — clarify: assume full payload
-- Validation: ensure `project_key` and at least one issue (either `jira_issues` or issues inside `epics`)
-- Transform tickets using transformer
-- Sequentially create epics first (if provided), capture keys for linking child issues via `parent`
-- Create non-epic issues; attach parent key if provided or derived from created epics
-- Build response summarizing successes/failures
+- Create Sub-task with `parent: { id: storyId }`
 
-### 4. Routing
+5. Collect results and partial errors; return summary to client
+6. Add retries (e.g., 429/5xx) with backoff; fail soft and continue siblings
 
-- Update `backend/src/routes/scrum.routes.js`
-- Add `POST /api/v1/scrum/tickets/create`
-- JSON body (no multer)
-- Wire to `createTicketsInJira`
+## Field Mapping Notes
 
-### 5. Error Handling & Logging
+- Epic: `issuetype.name = 'Epic'`, `summary = epic.title`, `description`
+- Story: `issuetype.name = 'Story'`, `parent.id = epicId`, `priority.name`, `summary`, `description`, `Story Points` custom field (configurable env `JIRA_STORY_POINTS_FIELD`)
+- Sub-task: `issuetype.name = 'Sub-task'`, `parent.id = storyId`, `summary`, `description`, `priority`
 
-- Wrap Jira calls with try/catch
-- Accumulate per-ticket errors but continue processing others
-- Return 207-style response: HTTP 200 with `created` and `failed`
-- Surface Jira error messages for debugging
+## Error Handling
 
-## Files to Modify
+- Validate before calling Jira
+- Continue on sibling errors; aggregate `errors[]` with context `{level: 'epic'|'story'|'subtask', parentSummary, summary, error}`
+- Surface Jira API validation messages
 
-- `backend/src/services/jira/issue_service.js`
-- `backend/src/controllers/scrum.controller.js`
-- `backend/src/routes/scrum.routes.js`
+## Security
 
-## Files to Create
+- Use existing Jira auth in `jiraClient.js`
+- Limit payload size and sanitize text fields
 
-- `backend/src/services/jira/ticketTransformer.service.js`
+## Post-conditions
 
-## Additional Considerations
-
-- Story points/custom fields may vary; expose TODO for custom field IDs
-- Assignee handling may require Atlassian accountId vs email — document assumption
-- Ensure acceptance criteria appended to description (e.g., bullet list)
-- If no tickets succeed, return `success: false`
+- All created issue keys/ids returned mapped to their source summaries for UI linkage
+- Safe to call multiple times; avoid duplicates by optional `dryRun` and/or de-dup key (not in first cut)

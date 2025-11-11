@@ -1,9 +1,5 @@
 import "dotenv/config";
 
-/**
- * Convert plain text to minimal Atlassian Document Format (ADF).
- * Jira Cloud v3 expects description in ADF.
- */
 const textToADF = (text = "") => ({
   type: "doc",
   version: 1,
@@ -34,12 +30,7 @@ const withStoryPoints = (fields, storyPoints) => {
   };
 };
 
-/**
- * Epic payload for Team-managed:
- * - issuetype.name = "Epic"
- * - summary = epic.title
- * - description in ADF (optional)
- */
+
 export const toEpicCreatePayload = ({ projectKey, epic }) => {
   return {
     fields: {
@@ -51,14 +42,6 @@ export const toEpicCreatePayload = ({ projectKey, epic }) => {
   };
 };
 
-/**
- * Story payload for Team-managed with Epic as parent:
- * - issuetype.name = "Story"
- * - parent.id = epicId
- * - description in ADF
- * - priority by name (if provided)
- * - story points via env JIRA_STORY_POINTS_FIELD (if set)
- */
 export const toStoryCreatePayload = ({ projectKey, story, epicId }) => {
   let fields = {
     project: { key: projectKey },
@@ -74,13 +57,6 @@ export const toStoryCreatePayload = ({ projectKey, story, epicId }) => {
   return { fields };
 };
 
-/**
- * Sub-task payload for Team-managed with Story as parent:
- * - issuetype.name = "Sub-task"
- * - parent.id = storyId
- * - description in ADF
- * - priority by name (if provided)
- */
 export const toSubtaskCreatePayload = ({
   projectKey,
   subtask,
