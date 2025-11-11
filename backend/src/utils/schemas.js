@@ -25,27 +25,21 @@ const JiraIssueSchema = z.object({
     .default("Medium")
     .describe("Priority level as recognized by Jira."),
 
-  assignee: z
-    .string()
-    .optional()
-    .describe("Email or account ID of the user to assign the issue to."),
+  assignee: z.string().optional().describe("User assigned to the issue."),
 
   labels: z
     .array(z.string())
     .optional()
-    .describe("Optional tags for grouping or filtering issues."),
+    .describe("Tags for grouping or filtering issues."),
 
-  parent: z
-    .string()
-    .optional()
-    .describe("If this is a subtask, provide the parent issue key."),
-
-  epic_name: z
+  parent_ref: z
     .string()
     .optional()
     .describe(
-      "Used only when creating an Epic (required in some Jira configs)."
+      "The title or summary of the parent issue (Epic → Story → Task)."
     ),
+
+  epic_name: z.string().optional().describe("Used only when creating an Epic."),
 
   story_points: z
     .number()
@@ -55,20 +49,29 @@ const JiraIssueSchema = z.object({
   acceptance_criteria: z
     .array(z.string())
     .optional()
-    .describe("List of measurable conditions for completion."),
+    .describe("Conditions for completion."),
+
+  // nested tasks or subtasks allowed for deep hierarchy
+  sub_issues: z
+    .array(
+      z.object({
+        type: JiraIssueTypeEnum,
+        summary: z.string(),
+        description: z.string(),
+        priority: z
+          .enum(["Highest", "High", "Medium", "Low", "Lowest"])
+          .optional()
+          .default("Medium"),
+        parent_ref: z.string().optional(),
+        story_points: z.number().optional(),
+        acceptance_criteria: z.array(z.string()).optional(),
+      })
+    )
+    .optional()
+    .describe("Tasks or subtasks belonging to this Story."),
 });
 
 export const PRDParserSchema = z.object({
-  project_key: z
-    .string()
-    .describe(
-      "The Jira project key where issues will be created, e.g., 'AI' or 'PROJ'."
-    ),
-
-  project_title: z
-    .string()
-    .describe("The main project or feature title derived from the PRD."),
-
   epics: z
     .array(
       z.object({
@@ -78,11 +81,10 @@ export const PRDParserSchema = z.object({
       })
     )
     .optional()
-    .describe("Top-level features (Epics) containing related Stories/Tasks."),
+    .describe("Top-level Epics, each containing Stories/Tasks hierarchy."),
 
   jira_issues: z
     .array(JiraIssueSchema)
-    .describe(
-      "A flat list of generated Jira issues if no epic hierarchy is needed."
-    ),
+    .optional()
+    .describe("Flat list for independent issues without Epic hierarchy."),
 });
