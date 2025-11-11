@@ -4,6 +4,52 @@ import dotenv from "dotenv";
 import { model } from "../ai/model.service.js";
 dotenv.config();
 
+// Attempt to robustly extract and sanitize JSON returned by the model
+const extractJsonFromText = (text) => {
+  if (!text) return null;
+  // Prefer fenced ```json ... ```
+  const fencedJson = text.match(/```json\s*([\s\S]*?)```/i);
+  if (fencedJson && fencedJson[1]) return fencedJson[1].trim();
+  // Fallback to any fenced block ``` ... ```
+  const fenced = text.match(/```\s*([\s\S]*?)```/);
+  if (fenced && fenced[1]) return fenced[1].trim();
+  // Fallback to substring between first { and last }
+  const first = text.indexOf("{");
+  const last = text.lastIndexOf("}");
+  if (first !== -1 && last !== -1 && last > first) {
+    return text.slice(first, last + 1).trim();
+  }
+  return text.trim();
+};
+
+const removeTrailingCommas = (s) =>
+  s
+    // remove trailing commas in objects
+    .replace(/,\s*}/g, "}")
+    // remove trailing commas in arrays
+    .replace(/,\s*]/g, "]");
+
+const normalizeQuotes = (s) => s.replace(/[“”]/g, '"').replace(/[‘’]/g, "'");
+
+const sanitizeJsonString = (s) => {
+  if (!s) return s;
+  let out = s.trim();
+  out = normalizeQuotes(out);
+  out = removeTrailingCommas(out);
+  return out;
+};
+
+const tryParseLLMJson = (text) => {
+  const raw = extractJsonFromText(text);
+  if (!raw) throw new Error("No JSON found in model output.");
+  try {
+    return JSON.parse(raw);
+  } catch {
+    const cleaned = sanitizeJsonString(raw);
+    return JSON.parse(cleaned);
+  }
+};
+
 const extractTextFromPdfBuffer = (pdfBuffer) => {
   return new Promise((resolve, reject) => {
     let fullText = "";
@@ -97,10 +143,27 @@ export const getSuggestionsFromPRD = async (prdBuffer) => {
                           "jira_issues": []
                         }
                         ### 🧾 PRD Input: ${prdText}`;
-    const aiResponse = await structuredChain.invoke(fullPrompt);
-    return aiResponse;
+    // Primary path: rely on structured output
+    try {
+      const aiResponse = await structuredChain.invoke(fullPrompt);
+      return aiResponse;
+    } catch (primaryErr) {
+      // Fallback: parse the model's raw text, then validate against schema
+      console.warn(
+        "Structured output parse failed, attempting fallback JSON repair..."
+      );
+      const rawText = await model.invoke(`${fullPrompt}
+
+Return ONLY valid JSON that matches the required schema. Do not include any explanations or markdown fences.`);
+      const parsed = tryParseLLMJson(
+        typeof rawText === "string" ? rawText : String(rawText)
+      );
+      const validated = PRDParserSchema.parse(parsed);
+      return validated;
+    }
   } catch (error) {
-    console.error("Error processing PRD:", error);
+    console.error("Error processing PRD:", error?.message || error);
+    // Clean, consistent error up the stack
     throw new Error("Failed to generate structured suggestions from PRD.");
   }
 };
