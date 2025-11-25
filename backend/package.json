@@ -1,0 +1,37 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "Backend Service that manages all required intergration of the app with jira and the AI layer.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon src/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/anudeepmuppalla1729/AI-Scrum-Assistant.git"
+  },
+  "author": "MAC",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/anudeepmuppalla1729/AI-Scrum-Assistant/issues"
+  },
+  "homepage": "https://github.com/anudeepmuppalla1729/AI-Scrum-Assistant#readme",
+  "dependencies": {
+    "@langchain/core": "^1.0.3",
+    "@langchain/google-genai": "^1.0.0",
+    "axios": "^1.13.2",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "jira.js": "^5.2.2",
+    "multer": "^2.0.2",
+    "nodemon": "^3.1.10",
+    "pdf-parse": "^2.4.5",
+    "pdfreader": "^3.0.8",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
+    "zod": "^4.1.12"
+  },
+  "type": "module"
+}
