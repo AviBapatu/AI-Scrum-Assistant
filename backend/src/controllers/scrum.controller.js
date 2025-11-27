@@ -1,6 +1,7 @@
 import { getSuggestionsFromPRD } from "../services/ai/prdToTickets.service.js";
 import { PushAISuggestionsBodySchema } from "../utils/schemas.js";
 import { pushAISuggestionsHierarchy } from "../services/jira/transformers/hierarchy.service.js";
+import { chatWithAI } from "../services/ai/chatbot.service.js";
 
 export const generateSuggestions = async (req, res) => {
   try {
@@ -10,7 +11,12 @@ export const generateSuggestions = async (req, res) => {
 
     const prdBuffer = req.file.buffer;
     const userPrompt = req.body.userPrompt || "";
-    const aiSuggestions = await getSuggestionsFromPRD(prdBuffer, userPrompt);
+    const filename = req.file.originalname;
+    const aiSuggestions = await getSuggestionsFromPRD(
+      prdBuffer,
+      userPrompt,
+      filename
+    );
 
     return res.status(200).json({
       success: true,
@@ -55,5 +61,56 @@ export const pushAISuggestionsToJira = async (req, res) => {
       success: false,
       error: error.message || "Failed to push AI suggestions to Jira.",
     });
+  }
+};
+
+export const chatWithScrumMaster = async (req, res) => {
+  try {
+    const { query } = req.body;
+    if (!query) {
+      return res.status(400).json({ error: "Query is required." });
+    }
+
+    const answer = await chatWithAI(query);
+
+    return res.status(200).json({
+      success: true,
+      answer,
+    });
+  } catch (error) {
+    console.error("Error in chatWithScrumMaster:", error);
+    return res.status(500).json({
+      success: false,
+      error: "Failed to process chat query.",
+    });
+  }
+};
+
+import {
+  generateDailyStandup,
+  generateSprintRetrospective,
+} from "../services/automation/automation.service.js";
+
+export const getDailyStandupReport = async (req, res) => {
+  try {
+    const { projectKey } = req.query;
+    if (!projectKey)
+      return res.status(400).json({ error: "Project key is required" });
+    const report = await generateDailyStandup(projectKey);
+    res.status(200).json({ success: true, report });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+export const getSprintRetrospectiveReport = async (req, res) => {
+  try {
+    const { sprintId } = req.query;
+    if (!sprintId)
+      return res.status(400).json({ error: "Sprint ID is required" });
+    const report = await generateSprintRetrospective(sprintId);
+    res.status(200).json({ success: true, report });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
   }
 };

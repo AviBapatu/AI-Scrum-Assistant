@@ -84,4 +84,78 @@ router.post("/suggestions", upload.single("prdFile"), generateSuggestions);
  */
 router.post("/pushSuggestionsToJira", pushAISuggestionsToJira);
 
+/**
+ * @openapi
+ * /api/v1/scrum/chat:
+ *   post:
+ *     summary: Chat with the AI Scrum Master
+ *     tags:
+ *       - Scrum
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               query:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Chat response
+ */
+import {
+  chatWithScrumMaster,
+  getDailyStandupReport,
+  getSprintRetrospectiveReport,
+} from "../controllers/scrum.controller.js";
+router.post("/chat", chatWithScrumMaster);
+
+/**
+ * @openapi
+ * /api/v1/scrum/standup:
+ *   get:
+ *     summary: Get Daily Standup Report
+ *     tags:
+ *       - Scrum
+ *     parameters:
+ *       - in: query
+ *         name: projectKey
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Jira Project Key
+ *     responses:
+ *       200:
+ *         description: Daily Standup Report
+ *       400:
+ *         description: Missing project key
+ */
+router.get("/standup", getDailyStandupReport);
+
+/**
+ * @openapi
+ * /api/v1/scrum/retrospective:
+ *   get:
+ *     summary: Get Sprint Retrospective Report
+ *     tags:
+ *       - Scrum
+ *     parameters:
+ *       - in: query
+ *         name: sprintId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Jira Sprint ID
+ *     responses:
+ *       200:
+ *         description: Sprint Retrospective Report
+ *       400:
+ *         description: Missing sprint ID
+ */
+router.get("/retrospective", getSprintRetrospectiveReport);
+
+import { handleJiraWebhook } from "../controllers/webhook.controller.js";
+router.post("/webhooks/jira", handleJiraWebhook);
+
 export default router;
