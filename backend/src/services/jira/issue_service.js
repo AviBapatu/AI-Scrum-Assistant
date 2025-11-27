@@ -50,19 +50,21 @@ export const updateTicket = async (issueIdOrKey, fieldsToUpdate) => {
  */
 export const search = async (jqlString) => {
   try {
-    // client.issueSearch.searchForIssuesUsingJql provides the JQL flexibility.
-    const response = await jiraClient.issueSearch.searchForIssuesUsingJql({
-      jql: jqlString,
-      // Common fields + Story Points (often customfield_10002)
-      fields: [
-        "summary",
-        "description",
-        "status",
-        "project",
-        "issuetype",
-        "customfield_10002",
-      ],
-    });
+    // client.issueSearch.searchForIssuesUsingJqlPost maps to the POST /rest/api/3/search endpoint.
+    // The GET endpoint (searchForIssuesUsingJql) is deprecated/removed for some instances.
+    const response =
+      await jiraClient.issueSearch.searchForIssuesUsingJqlEnhancedSearchPost({
+        jql: jqlString,
+        // Common fields + Story Points (often customfield_10002)
+        fields: [
+          "summary",
+          "description",
+          "status",
+          "project",
+          "issuetype",
+          "customfield_10002",
+        ],
+      });
     return response.issues;
   } catch (error) {
     console.error(
