@@ -9,7 +9,8 @@ export const generateSuggestions = async (req, res) => {
     }
 
     const prdBuffer = req.file.buffer;
-    const aiSuggestions = await getSuggestionsFromPRD(prdBuffer);
+    const userPrompt = req.body.userPrompt || "";
+    const aiSuggestions = await getSuggestionsFromPRD(prdBuffer, userPrompt);
 
     return res.status(200).json({
       success: true,

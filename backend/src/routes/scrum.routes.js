@@ -31,6 +31,9 @@ const router = express.Router();
  *                 type: string
  *                 format: binary
  *                 description: The PRD PDF file to upload
+ *               userPrompt:
+ *                 type: string
+ *                 description: User instructions to focus the ticket generation
  *     responses:
  *       200:
  *         description: AI-generated suggestions were created successfully
