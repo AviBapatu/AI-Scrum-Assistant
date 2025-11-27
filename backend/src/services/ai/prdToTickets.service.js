@@ -2,6 +2,7 @@ import { PRDParserSchema } from "../../utils/schemas.js";
 import { PdfReader } from "pdfreader";
 import dotenv from "dotenv";
 import { model } from "../ai/model.service.js";
+import { upsertPRD } from "./rag.service.js";
 dotenv.config();
 
 const extractJsonFromText = (text) => {
@@ -32,12 +33,24 @@ const sanitizeJsonString = (s) => {
 };
 
 const tryParseLLMJson = (text) => {
-  const raw = extractJsonFromText(text);
-  if (!raw) throw new Error("No JSON found in model output.");
+  // If the input is already an object (e.g. AIMessage), try to extract content
+  let raw = text;
+  if (typeof text === "object" && text !== null) {
+    if (text.content) {
+      raw = text.content;
+    } else {
+      // If it's a raw object that might be the JSON itself
+      return text;
+    }
+  }
+
+  const jsonString = extractJsonFromText(String(raw));
+  if (!jsonString) throw new Error("No JSON found in model output.");
+
   try {
-    return JSON.parse(raw);
+    return JSON.parse(jsonString);
   } catch {
-    const cleaned = sanitizeJsonString(raw);
+    const cleaned = sanitizeJsonString(jsonString);
     return JSON.parse(cleaned);
   }
 };
@@ -77,8 +90,13 @@ export const getSuggestionsFromPRD = async (prdBuffer, userPrompt = "") => {
     }
 
     console.log(`Extracted PRD text length: ${prdText.length} characters`);
-    const scrumGuidelines =
-      `Follow Scrum best practices when structuring Epics, Stories, and Tasks. 
+
+    // Upsert to RAG (fire and forget)
+    upsertPRD(prdText, "PRD Document").catch((err) =>
+      console.error("Failed to upsert PRD to RAG:", err)
+    );
+
+    const scrumGuidelines = `Follow Scrum best practices when structuring Epics, Stories, and Tasks. 
       An Epic represents a large business goal or initiative that may span multiple
       sprints and should be split into smaller, independent, value-delivering User Stories.
       Each Story should deliver a vertical slice of functionality that provides user or
@@ -163,8 +181,15 @@ export const getSuggestionsFromPRD = async (prdBuffer, userPrompt = "") => {
       const rawText = await model.invoke(`${fullPrompt}
 
 Return ONLY valid JSON that matches the required schema. Do not include any explanations or markdown fences.`);
+
+      // Handle AIMessage object if returned
+      let textToParse = rawText;
+      if (typeof rawText === "object" && rawText !== null && rawText.content) {
+        textToParse = rawText.content;
+      }
+
       const parsed = tryParseLLMJson(
-        typeof rawText === "string" ? rawText : String(rawText)
+        typeof textToParse === "string" ? textToParse : String(textToParse)
       );
       const validated = PRDParserSchema.parse(parsed);
       return validated;
