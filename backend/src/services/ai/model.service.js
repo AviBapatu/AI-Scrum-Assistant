@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 if (!process.env.GEMINI_API_KEY) {
-  throw new Error("Missing GOOGLE_API_KEY in environment variables.");
+  throw new Error("Missing GEMINI_API_KEY in environment variables.");
 }
 export const model = new ChatGoogleGenerativeAI({
   apiKey: process.env.GEMINI_API_KEY,
