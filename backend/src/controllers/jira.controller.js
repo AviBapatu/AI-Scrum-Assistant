@@ -9,8 +9,17 @@ export const startJiraAuth = (req, res) => {
   const params = {
     audience: "api.atlassian.com",
     client_id: process.env.ATLASSIAN_CLIENT_ID,
-    scope: "read:jira-user read:jira-work write:jira-work read:me",
     redirect_uri: process.env.ATLASSIAN_REDIRECT_URI,
+    scope: [
+      "read:me",
+      "read:user:jira",
+      "write:issue:jira",
+      "read:jira-work",
+      "read:board-scope:jira-software",
+      "read:sprint:jira-software",
+      "read:project:jira",
+      "read:issue:jira",
+    ].join(" "),
     state: "state-123",
     response_type: "code",
     prompt: "consent"
@@ -40,7 +49,9 @@ export const jiraCallback = async (req, res) => {
       }
     );
 
-    const { access_token, refresh_token, expires_in } = tokenResponse.data;
+    const { access_token, refresh_token, expires_in, scope } = tokenResponse.data;
+    console.log("Jira OAuth Token Response:", tokenResponse.data);
+    console.log("Granted Scopes:", scope);
 
     // 2. Fetch user’s Atlassian info
     const userInfo = await axios.get("https://api.atlassian.com/me", {

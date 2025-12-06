@@ -16,17 +16,23 @@ export const getProjects = async (req, res) => {
 
     const url = `https://api.atlassian.com/ex/jira/${user.cloudId}/rest/api/3/project/search`;
 
+    console.log(`Fetching projects for cloudId: ${user.cloudId}`);
     const response = await axios.get(url, {
       headers: {
         Authorization: `Bearer ${user.jiraTokens.accessToken}`,
         Accept: "application/json"
       }
     });
-
+    console.log("Projects response status:", response.status);
+    console.log("Projects data keys:", Object.keys(response.data));
     return res.json(response.data);
 
   } catch (err) {
-    console.error(err.response?.data || err);
-    return res.status(500).json({ error: "Failed to fetch Jira projects" });
+    console.error("Project fetch error:", err.response?.data || err.message);
+    const status = err.response?.status || 500;
+    return res.status(status).json({
+      error: "Failed to fetch Jira projects",
+      details: err.response?.data || err.message
+    });
   }
 };
