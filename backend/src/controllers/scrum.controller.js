@@ -50,6 +50,7 @@ export const pushAISuggestionsToJira = async (req, res) => {
   } catch (error) {
     const zodIssues = error?.issues || error?.errors;
     if (zodIssues) {
+      console.error("Validation Error:", JSON.stringify(zodIssues, null, 2));
       return res.status(400).json({
         success: false,
         error: "Invalid request body",

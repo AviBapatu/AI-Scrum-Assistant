@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { ChatMessage } from "../types/chat.types";
 
-const CHAT_API_URL = "http://localhost:2000/api/v1/scrum/chat";
+const CHAT_API_URL = "/api/v1/scrum/chat";
 
 export const useChat = () => {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
