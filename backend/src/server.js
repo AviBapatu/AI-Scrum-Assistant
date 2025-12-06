@@ -3,13 +3,14 @@ import cors from "cors";
 import scrumRoutes from "./routes/scrum.routes.js";
 import { setupSwagger } from "./swagger.js";
 import authRoutes from "./routes/auth.routes.js";
-
+import jiraRoutes from "./routes/jira.routes.js";
 
 const app = express();
 
 app.use(cors());
 app.use(express.json({ limit: "10mb" })); // Allows larger payloads
 app.use("/auth", authRoutes);
+app.use("/auth/jira", jiraRoutes);
 
 // Swagger UI
 setupSwagger(app);
