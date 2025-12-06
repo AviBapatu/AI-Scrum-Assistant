@@ -21,6 +21,7 @@ export const fetchCloudId = async (req, res) => {
     );
 
     const resources = response.data;
+    console.log("Accessible Resources found:", resources.length, resources);
 
     if (!resources.length) {
       return res.status(400).json({ error: "No Jira sites found" });
