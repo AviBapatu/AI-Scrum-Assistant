@@ -8,16 +8,34 @@ const SuccessPage = () => {
   const token = params.get("token");
 
   useEffect(() => {
-    if (token) {
-      localStorage.setItem("token", token);
-      console.log("JWT saved:", token);
+    const run = async () => {
+      if (!token) return;
 
-      // optional redirect
-      navigate("/");
-    }
+      localStorage.setItem("token", token);
+
+      const res = await fetch("http://localhost:2000/auth/jira/cloud-id", {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      if (!res.ok) {
+        console.error("Failed to fetch cloudId");
+        return;
+      }
+
+      const data = await res.json();
+      console.log("Cloud ID:", data.cloudId);
+
+      localStorage.setItem("cloudId", data.cloudId);
+
+      navigate("/dashboard");
+    };
+
+    run();
   }, [token, navigate]);
 
-  return <div>Authenticating…</div>;
+  return <div>Finalizing authentication…</div>;
 };
 
 export default SuccessPage;

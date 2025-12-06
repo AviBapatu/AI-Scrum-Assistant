@@ -17,10 +17,12 @@ const userSchema = new mongoose.Schema(
     },
 
     jiraTokens: {
-      accessToken: { type: String },
-      refreshToken: { type: String },
-      expiresAt: { type: Date }
+    accessToken: String,
+    refreshToken: String,
+    expiresAt: Date
     },
+    cloudId: { type: String },
+
 
     displayName: { type: String },
 
