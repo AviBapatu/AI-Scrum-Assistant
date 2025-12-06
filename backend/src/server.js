@@ -5,6 +5,7 @@ import { setupSwagger } from "./swagger.js";
 import authRoutes from "./routes/auth.routes.js";
 import jiraRoutes from "./routes/jira.routes.js";
 import jiraCloudRoutes from "./routes/jiraCloud.routes.js";
+import jiraApiRoutes from "./routes/jiraApi.routes.js";
 
 const app = express();
 
@@ -26,8 +27,7 @@ app.get("/", (req, res) => {
 
 app.use("/auth/jira", jiraCloudRoutes);
 app.use("/api/v1/scrum", scrumRoutes);
-
-
+app.use("/auth/jira", jiraApiRoutes);
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
