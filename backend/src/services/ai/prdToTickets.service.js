@@ -131,11 +131,10 @@ export const getSuggestionsFromPRD = async (prdBuffer, userPrompt = "") => {
                         6. Use realistic story_points (1–13).
                         7. Only output valid JSON, no markdown or explanations.
                         ### User Instructions:
-                        ${
-                          userPrompt
-                            ? `The user has provided specific focus areas: "${userPrompt}". Prioritize these in the generated tickets. No need of All Features`
-                            : "No specific user focus provided. Generate a comprehensive backlog based on the PRD."
-                        }
+                        ${userPrompt
+        ? `The user has provided specific focus areas: "${userPrompt}". Prioritize these in the generated tickets. No need of All Features`
+        : "No specific user focus provided. Generate a comprehensive backlog based on the PRD."
+      }
                         ### Hierarchy Example:
                         JSON:
                         {
@@ -195,7 +194,10 @@ Return ONLY valid JSON that matches the required schema. Do not include any expl
       return validated;
     }
   } catch (error) {
-    console.error("Error processing PRD:", error?.message || error);
-    throw new Error("Failed to generate structured suggestions from PRD.");
+    console.error("Error processing PRD:", error);
+    if (error instanceof Error) {
+      console.error("Stack:", error.stack);
+    }
+    throw new Error(`Failed to generate structured suggestions: ${error.message}`);
   }
 };
