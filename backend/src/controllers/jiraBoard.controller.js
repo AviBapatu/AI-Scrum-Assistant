@@ -4,6 +4,7 @@ import User from "../models/User.js";
 export const getBoards = async (req, res) => {
   try {
     const userId = req.user.userId;
+    console.log("Hit getBoards controller. UserID:", userId);
     const user = await User.findById(userId);
 
     if (!user || !user.jiraTokens?.accessToken) {

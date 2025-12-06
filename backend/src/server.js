@@ -9,10 +9,15 @@ import jiraApiRoutes from "./routes/jiraApi.routes.js";
 import jiraBoardRoutes from "./routes/jiraBoard.routes.js";
 import jiraSprintRoutes from "./routes/jiraSprint.routes.js";
 import jiraIssueRoutes from "./routes/jiraIssue.routes.js";
+import jiraIssueCreateRoutes from "./routes/jiraIssueCreate.routes.js";
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: "*",
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
 app.use(express.json({ limit: "10mb" })); // Allows larger payloads
 app.use("/auth", authRoutes);
 app.use("/auth/jira", jiraRoutes);
@@ -34,6 +39,8 @@ app.use("/auth/jira", jiraApiRoutes);
 app.use("/auth/jira", jiraBoardRoutes);
 app.use("/auth/jira", jiraSprintRoutes);
 app.use("/auth/jira", jiraIssueRoutes);
+app.use("/auth/jira", jiraIssueCreateRoutes);
+
 
 
 app.use((err, req, res, next) => {
