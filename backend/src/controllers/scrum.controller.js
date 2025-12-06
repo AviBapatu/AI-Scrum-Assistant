@@ -66,21 +66,21 @@ export const pushAISuggestionsToJira = async (req, res) => {
 
 export const chatWithScrumMaster = async (req, res) => {
   try {
-    const { query } = req.body;
-    if (!query) {
-      return res.status(400).json({ error: "Query is required." });
+    const { message } = req.body;
+    if (!message) {
+      return res.status(400).json({ error: "Message is required." });
     }
 
-    const answer = await chatWithAI(query);
+    const answer = await chatWithAI(message);
 
     return res.status(200).json({
-      success: true,
-      answer,
+      reply: answer,
+      intent: "chat", // Default intent for now
+      issues: [],
     });
   } catch (error) {
     console.error("Error in chatWithScrumMaster:", error);
     return res.status(500).json({
-      success: false,
       error: "Failed to process chat query.",
     });
   }

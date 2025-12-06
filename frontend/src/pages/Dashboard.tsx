@@ -72,6 +72,12 @@ const Dashboard = () => {
         Create Test Issue
       </button>
 
+      <button
+        onClick={() => window.location.href = "/chat"}
+        style={{ marginTop: "20px", padding: "10px", marginLeft: "10px" }}>
+        Go to AI Chat
+      </button>
+
       {activeSprintIssues.length > 0 && (
         <div style={{ marginTop: "20px" }}>
           <h2>Active Sprint Issues</h2>
