@@ -19,7 +19,8 @@ export const getSprintIssues = async (req, res) => {
 
         // Using POST as recommended for the new JQL endpoint
         const response = await axios.post(url, {
-            jql: `sprint=${sprintId}`
+            jql: `sprint=${sprintId}`,
+            fields: ["summary", "status", "issuetype", "priority", "created", "updated"]
         }, {
             headers: {
                 Authorization: `Bearer ${user.jiraTokens.accessToken}`,
