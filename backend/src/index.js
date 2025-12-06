@@ -15,8 +15,8 @@ async function startServer() {
   await connectDB();
 
   app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-    console.log(`Open in browser: http://localhost:${PORT}`);
+    console.log(`Server is running on port ${PORT} Baby!!!`);
+    console.log(`Open in browser: http://localhost:${PORT} Baby!!!`);
     console.log("✓ MongoDB Connected");
   });
 }
