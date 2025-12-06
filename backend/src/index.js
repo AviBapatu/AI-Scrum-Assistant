@@ -4,9 +4,9 @@ import app from "./server.js";
 const PORT = process.env.PORT || 2000;
 
 function startServer() {
-  if (!process.env.GEMINI_API_KEY) {
+  if (!process.env.GOOGLE_API_KEY) {
     console.error(
-      "FATAL ERROR: GEMINI_API_KEY is not defined in the .env file."
+      "FATAL ERROR: GOOGLE_API_KEY is not defined in the .env file."
     );
     process.exit(1); // Stop execution if the core AI functionality is disabled
   }
