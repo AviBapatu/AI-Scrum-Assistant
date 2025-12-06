@@ -26,8 +26,8 @@ const UserMenu: React.FC = () => {
         // Since the key isn't specified, I'll clear typical auth keys or just all localstorage if that's safe, 
         // but better to be specific if known. For now, I'll assume 'accessToken' or just clear what I know.
         // The spec says "Remove JWT from localStorage". I'll clear common items.
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('jira_access_token'); // If used
+        localStorage.removeItem('token');
+        localStorage.removeItem('cloudId');
 
         // Remove workspace from Zustand & localStorage
         clearWorkspace();

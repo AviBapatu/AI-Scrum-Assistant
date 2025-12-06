@@ -6,6 +6,8 @@ import Dashboard from "./pages/Dashboard";
 import ChatPage from "./pages/ChatPage";
 import WorkspaceSelect from "./pages/WorkspaceSelect";
 import Layout from "./components/Layout";
+import RequireAuth from "./components/auth/RequireAuth";
+import RequireWorkspace from "./components/auth/RequireWorkspace";
 
 function App() {
   return (
@@ -15,14 +17,21 @@ function App() {
         <Route path="/oauth/success" element={<SuccessPage />} />
         <Route path="/" element={<LoginWithJiraButton />} />
 
-        {/* Authenticated Routes */}
-        <Route element={<Layout />}>
-          <Route path="/dashboard" element={<Dashboard />} />
+        {/* Level 1: Require Authentication (Token) */}
+        <Route element={<RequireAuth />}>
+          {/* Workspace Selection - Needs Auth but not Workspace */}
           <Route path="/workspace" element={<WorkspaceSelect />} />
-          <Route path="/chat" element={<ChatPage />} />
-          <Route path="/prd" element={<div className="p-8">PRD Generator Coming Soon</div>} />
-          <Route path="/tools/standup" element={<div className="p-8">Standup Generator Coming Soon</div>} />
-          <Route path="/tools/retro" element={<div className="p-8">Retrospective Generator Coming Soon</div>} />
+
+          {/* Level 2: Require Workspace */}
+          <Route element={<RequireWorkspace />}>
+            <Route element={<Layout />}>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/chat" element={<ChatPage />} />
+              <Route path="/prd" element={<div className="p-8">PRD Generator Coming Soon</div>} />
+              <Route path="/tools/standup" element={<div className="p-8">Standup Generator Coming Soon</div>} />
+              <Route path="/tools/retro" element={<div className="p-8">Retrospective Generator Coming Soon</div>} />
+            </Route>
+          </Route>
         </Route>
       </Routes>
     </BrowserRouter>

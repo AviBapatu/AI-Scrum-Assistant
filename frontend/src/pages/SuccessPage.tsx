@@ -29,7 +29,7 @@ const SuccessPage = () => {
 
       localStorage.setItem("cloudId", data.cloudId);
 
-      navigate("/dashboard");
+      navigate("/workspace");
     };
 
     run();
