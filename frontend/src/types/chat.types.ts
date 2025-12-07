@@ -1,5 +1,7 @@
 export interface ChatMessage {
-    role: "user" | "ai";
-    text: string;
-    meta?: any; // For future use (e.g., issues, intent)
+    id: string;
+    role: "user" | "assistant" | "system";
+    content: string;
+    createdAt: string | number;
+    meta?: any;
 }

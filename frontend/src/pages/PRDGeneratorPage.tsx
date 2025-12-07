@@ -43,6 +43,24 @@ const PRDGeneratorPage: React.FC = () => {
         }
     };
 
+    const updateEpic = (index: number, updates: Partial<EpicSuggestion>) => {
+        setEpics(prev => {
+            const newEpics = [...prev];
+            newEpics[index] = { ...newEpics[index], ...updates };
+            return newEpics;
+        });
+    };
+
+    const updateStory = (epicIndex: number, storyIndex: number, updates: Partial<any>) => {
+        setEpics(prev => {
+            const newEpics = [...prev];
+            const newIssues = [...newEpics[epicIndex].issues];
+            newIssues[storyIndex] = { ...newIssues[storyIndex], ...updates };
+            newEpics[epicIndex] = { ...newEpics[epicIndex], issues: newIssues };
+            return newEpics;
+        });
+    };
+
     const handlePushToJira = async () => {
         if (!workspace) {
             alert("No workspace selected");
@@ -171,6 +189,8 @@ const PRDGeneratorPage: React.FC = () => {
                         onToggleStory={toggleStory}
                         onToggleTask={toggleTask}
                         onExpand={toggleExpand}
+                        onUpdateEpic={updateEpic}
+                        onUpdateStory={updateStory}
                     />
                 </div>
             )}
