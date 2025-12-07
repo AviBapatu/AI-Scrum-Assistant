@@ -1,4 +1,5 @@
 import React from "react";
+import ReactMarkdown from "react-markdown";
 import type { ChatMessage } from "../../types/chat.types";
 
 interface MessageBubbleProps {
@@ -9,14 +10,21 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
     const isUser = message.role === "user";
 
     return (
-        <div className={`flex w-full mb-4 ${isUser ? "justify-end" : "justify-start"}`}>
+        <div className={`flex w-full ${isUser ? "justify-end" : "justify-start"} mb-6`}>
             <div
-                className={`max-w-[70%] px-4 py-2 rounded-2xl ${isUser
-                    ? "bg-blue-600 text-white rounded-br-none"
-                    : "bg-gray-200 text-gray-800 rounded-bl-none"
+                className={`relative max-w-[85%] md:max-w-[75%] px-5 py-3.5 text-[15px] leading-relaxed shadow-sm
+        ${isUser
+                        ? "bg-[#111827] text-white rounded-2xl rounded-tr-sm"
+                        : "bg-white border border-gray-200 text-gray-800 rounded-2xl rounded-tl-sm"
                     }`}
             >
-                <p className="whitespace-pre-wrap">{message.text}</p>
+                {!isUser ? (
+                    <div className="markdown-body">
+                        <ReactMarkdown>{message.content}</ReactMarkdown>
+                    </div>
+                ) : (
+                    <div className="whitespace-pre-wrap">{message.content}</div>
+                )}
             </div>
         </div>
     );

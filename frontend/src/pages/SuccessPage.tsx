@@ -13,7 +13,7 @@ const SuccessPage = () => {
 
       localStorage.setItem("token", token);
 
-      const res = await fetch("http://localhost:2000/auth/jira/cloud-id", {
+      const res = await fetch("/auth/jira/cloud-id", {
         headers: {
           Authorization: `Bearer ${token}`
         }

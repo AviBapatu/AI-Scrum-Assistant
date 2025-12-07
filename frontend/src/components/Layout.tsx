@@ -5,10 +5,10 @@ import ModeBar from './navbar/modebar/ModeBar';
 
 const Layout: React.FC = () => {
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col">
+        <div className="h-screen bg-gray-50 flex flex-col overflow-hidden">
             <TopBar />
             <ModeBar />
-            <main className="flex-1 overflow-auto">
+            <main className="flex-1 overflow-auto min-h-0">
                 <Outlet />
             </main>
         </div>

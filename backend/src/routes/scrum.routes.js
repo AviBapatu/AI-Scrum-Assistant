@@ -3,13 +3,19 @@ import multer from "multer";
 import {
   generateSuggestions,
   pushAISuggestionsToJira,
-  chatWithScrumMaster,
-  getChatHistory,
   getDailyStandupReport,
   getSprintRetrospectiveReport,
 } from "../controllers/scrum.controller.js";
+import {
+  getSessions,
+  createSession,
+  renameSession,
+  deleteSession,
+  sendMessage,
+  getMessages,
+} from "../controllers/chat.controller.js";
 import { handleJiraWebhook } from "../controllers/webhook.controller.js";
-// import { protectRoute } from "../middleware/auth.middleware.js"; // Assuming this exists or similar
+import { auth } from "../middleware/auth.js";
 
 const storage = multer.memoryStorage();
 const upload = multer({
@@ -75,38 +81,76 @@ router.post("/pushSuggestionsToJira", pushAISuggestionsToJira);
 
 /**
  * @openapi
- * /api/v1/scrum/chat:
- *   post:
- *     summary: Chat with the AI Scrum Master
+ * /api/v1/scrum/chat/sessions:
+ *   get:
+ *     summary: Get all chat sessions
  *     tags:
- *       - Scrum
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               message:
- *                 type: string
+ *       - Chat
  *     responses:
  *       200:
- *         description: Chat response
+ *         description: List of chat sessions
  */
-router.post("/chat", chatWithScrumMaster);
+router.get("/chat/sessions", auth, getSessions);
 
 /**
  * @openapi
- * /api/v1/scrum/chat/history:
- *   get:
- *     summary: Get Chat History
+ * /api/v1/scrum/chat/session:
+ *   post:
+ *     summary: Create a new chat session
  *     tags:
- *       - Scrum
+ *       - Chat
+ *     responses:
+ *       201:
+ *         description: Created session
+ */
+router.post("/chat/session", auth, createSession);
+
+/**
+ * @openapi
+ * /api/v1/scrum/chat/session/{sessionId}:
+ *   patch:
+ *     summary: Rename a chat session
+ *     tags:
+ *       - Chat
  *     responses:
  *       200:
- *         description: Chat history
+ *         description: Updated session
+ *   delete:
+ *     summary: Delete a chat session
+ *     tags:
+ *       - Chat
+ *     responses:
+ *       200:
+ *         description: Session deleted
  */
-router.get("/chat/history", getChatHistory);
+router.patch("/chat/session/:sessionId", auth, renameSession);
+router.delete("/chat/session/:sessionId", auth, deleteSession);
+
+/**
+ * @openapi
+ * /api/v1/scrum/chat/{sessionId}:
+ *   post:
+ *     summary: Send message to a session
+ *     tags:
+ *       - Chat
+ *     responses:
+ *       200:
+ *         description: Message sent and AI response received
+ */
+router.post("/chat/:sessionId", auth, sendMessage);
+
+/**
+ * @openapi
+ * /api/v1/scrum/chat/{sessionId}/messages:
+ *   get:
+ *     summary: Get messages for a session
+ *     tags:
+ *       - Chat
+ *     responses:
+ *       200:
+ *         description: List of messages
+ */
+router.get("/chat/:sessionId/messages", auth, getMessages);
 
 
 /**

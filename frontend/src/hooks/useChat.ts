@@ -1,94 +1,93 @@
-import { useState, useRef, useCallback } from "react";
-import type { ChatMessage } from "../types/chat.types";
-import { v4 as uuidv4 } from "uuid";
+import { useState, useEffect, useCallback } from "react";
+import type { ChatMessage, SendMessageResponse } from "../types/chat.types";
+import { useAuthStore } from "../store/useAuthStore.ts";
 
-const CHAT_API_URL = "/api/v1/scrum/chat";
+const API_BASE_URL = import.meta.env.VITE_API_URL || "/api/v1";
 
-export const useChat = () => {
+export const useChat = (sessionId: string | null) => {
+    const { token } = useAuthStore();
     const [messages, setMessages] = useState<ChatMessage[]>([]);
-    const [loading, setLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [isSending, setIsSending] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    // Track processed session IDs if needed, or just appending logic
-    // For now, we mainly just need to append messages.
+    // Load messages when sessionId changes
+    useEffect(() => {
+        if (!sessionId || !token) {
+            setMessages([]);
+            return;
+        }
 
-    const sendMessage = useCallback(async (text: string, workspace?: { boardId: string; sprintId: string }) => {
-        if (!text.trim()) return;
+        const fetchMessages = async () => {
+            setIsLoading(true);
+            setError(null);
+            try {
+                const res = await fetch(`${API_BASE_URL}/scrum/chat/${sessionId}/messages`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                if (!res.ok) throw new Error("Failed to load messages");
+                const data = await res.json();
+                setMessages(data);
+            } catch (err: any) {
+                setError(err.message);
+            } finally {
+                setIsLoading(false);
+            }
+        };
 
-        // Optimistic append
-        const tempId = uuidv4();
-        const userMessage: ChatMessage = {
-            id: tempId,
+        fetchMessages();
+    }, [sessionId, token]);
+
+    const sendMessage = useCallback(async (content: string) => {
+        if (!sessionId || !token || !content.trim()) return;
+
+        // Optimistic update
+        const tempId = Date.now().toString();
+        const optimisticMsg: ChatMessage = {
+            _id: tempId,
+            sessionId,
             role: "user",
-            content: text,
+            content,
             createdAt: new Date().toISOString(),
         };
 
-        setMessages((prev) => [...prev, userMessage]);
-        setLoading(true);
-        setError(null);
+        setMessages((prev) => [...prev, optimisticMsg]);
+        setIsSending(true);
 
         try {
-            const token = localStorage.getItem("token");
-            if (!token) {
-                throw new Error("No authorization token found.");
-            }
-
-            const body: any = { message: text };
-            if (workspace) {
-                body.workspace = workspace;
-            }
-
-            const response = await fetch(CHAT_API_URL, {
+            const res = await fetch(`${API_BASE_URL}/scrum/chat/${sessionId}`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify(body),
+                body: JSON.stringify({ message: content }),
             });
 
-            if (!response.ok) {
-                const errData = await response.json().catch(() => ({}));
-                throw new Error(errData.error || `Error ${response.status}: Failed to send message`);
-            }
+            if (!res.ok) throw new Error("Failed to send message");
 
-            const data = await response.json();
+            const data: SendMessageResponse = await res.json();
 
-            // Expected backend response: { reply: string, sessionId?: string, ... }
-            if (data.reply) {
-                const aiMessage: ChatMessage = {
-                    id: uuidv4(),
-                    role: "assistant",
-                    content: data.reply,
-                    createdAt: new Date().toISOString(),
-                    meta: data,
-                };
-                setMessages((prev) => [...prev, aiMessage]);
-            }
+            // Replace optimistic message with real one and add assistant response
+            setMessages((prev) =>
+                prev.map(m => m._id === tempId ? data.userMessage : m).concat(data.assistantMessage)
+            );
+
         } catch (err: any) {
-            console.error("Chat error:", err);
-            setError(err.message || "Something went wrong talking to the AI.");
+            console.error(err);
+            setError("Failed to send message");
+            // Remove optimistic message on failure
+            setMessages((prev) => prev.filter(m => m._id !== tempId));
         } finally {
-            setLoading(false);
+            setIsSending(false);
         }
-    }, []);
-
-    const resetError = useCallback(() => {
-        setError(null);
-    }, []);
-
-    const clearChat = useCallback(() => {
-        setMessages([]);
-        setError(null);
-    }, []);
+    }, [sessionId, token]);
 
     return {
         messages,
-        loading,
+        isLoading,
+        isSending,
         error,
         sendMessage,
-        resetError,
-        clearChat,
     };
 };

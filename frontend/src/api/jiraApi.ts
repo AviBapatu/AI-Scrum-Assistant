@@ -1,4 +1,4 @@
-const BASE_URL = "http://localhost:2000/auth/jira";
+const BASE_URL = "/auth/jira";
 
 export const getBoards = async (token: string) => {
     const res = await fetch(`${BASE_URL}/boards`, {
