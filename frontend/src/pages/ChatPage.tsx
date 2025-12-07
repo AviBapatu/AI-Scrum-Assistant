@@ -32,15 +32,20 @@ const ChatPage: React.FC = () => {
         }
     }, [token, loadSessions]);
 
-    // 2. Sync URL -> Store
+    // 2. Sync URL -> Store & Auto-open
     useEffect(() => {
         if (urlSessionId && urlSessionId !== activeSessionId) {
             setActiveSession(urlSessionId);
-        } else if (!urlSessionId && activeSessionId) {
-            // If no URL param but we have active in store, sync store to null
-            setActiveSession(null);
+        } else if (!urlSessionId) {
+            // Auto-redirect to the first loaded session if available
+            if (sessions.length > 0) {
+                const mostRecent = sessions[0];
+                navigate(`/chat/${mostRecent._id}`, { replace: true });
+            } else {
+                setActiveSession(null);
+            }
         }
-    }, [urlSessionId, setActiveSession, activeSessionId]);
+    }, [urlSessionId, setActiveSession, activeSessionId, sessions, navigate]);
 
     // 3. Handlers
     const handleSelectSession = (id: string) => {

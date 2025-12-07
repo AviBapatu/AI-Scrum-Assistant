@@ -43,3 +43,34 @@ export interface PushToJiraResponse {
     createdIssues: string[]; // List of keys e.g., ["SCRUM-1", "SCRUM-2"]
     errors?: any[];
 }
+
+export interface GeneratorOptions {
+    includeAcceptanceCriteria: boolean;
+    estimateStoryPoints: boolean;
+    includeSubTasks: boolean;
+}
+
+export interface PRDSession {
+    _id: string;
+    userId: string;
+    title: string;
+    prompt: string;
+    epics: EpicSuggestion[];
+    options: GeneratorOptions;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface CreatePRDSessionRequest {
+    title?: string;
+    prompt?: string;
+    epics?: EpicSuggestion[];
+    options?: GeneratorOptions;
+}
+
+export interface UpdatePRDSessionRequest {
+    title?: string;
+    prompt?: string;
+    epics?: EpicSuggestion[];
+    options?: GeneratorOptions;
+}

@@ -30,6 +30,7 @@ function App() {
               <Route path="/chat" element={<ChatPage />} />
               <Route path="/chat/:sessionId" element={<ChatPage />} />
               <Route path="/prd" element={<PRDGeneratorPage />} />
+              <Route path="/prd/:sessionId" element={<PRDGeneratorPage />} />
               <Route path="/tools/standup" element={<div className="p-8">Standup Generator Coming Soon</div>} />
               <Route path="/tools/retro" element={<div className="p-8">Retrospective Generator Coming Soon</div>} />
             </Route>

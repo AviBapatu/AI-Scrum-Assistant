@@ -1,17 +1,19 @@
-import React, { useState } from 'react';
-import { ChevronRight, ChevronDown, Edit2, Check, X } from 'lucide-react';
-import type { StorySuggestion } from '../../types/prd.types';
+import React, { useState, useEffect } from 'react';
+import { CheckSquare, Square, ChevronRight, ChevronDown, Check } from 'lucide-react';
+import type { StorySuggestion, TaskSuggestion } from '../../types/prd.types';
 import { TaskItem } from './TaskItem';
 
 interface StoryItemProps {
     story: StorySuggestion;
     isSelected: boolean;
     isExpanded: boolean;
-    selectionState: { [taskIndex: number]: boolean };
+    selectionState: { selected: boolean; tasks: Record<number, boolean> };
     onToggle: () => void;
     onToggleTask: (taskIndex: number) => void;
     onExpand: () => void;
     onUpdate: (updates: Partial<StorySuggestion>) => void;
+    onUpdateTask: (taskIndex: number, updates: Partial<TaskSuggestion>) => void;
+    isLast: boolean;
 }
 
 export const StoryItem: React.FC<StoryItemProps> = ({
@@ -22,93 +24,117 @@ export const StoryItem: React.FC<StoryItemProps> = ({
     onToggle,
     onToggleTask,
     onExpand,
-    onUpdate
+    onUpdate,
+    onUpdateTask,
+    isLast
 }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [summary, setSummary] = useState(story.summary);
-    const [points, setPoints] = useState(story.story_points);
 
-    const handleSave = () => {
-        onUpdate({ summary, story_points: points });
-        setIsEditing(false);
-    };
-
-    const handleCancel = () => {
+    useEffect(() => {
         setSummary(story.summary);
-        setPoints(story.story_points);
+    }, [story.summary]);
+
+    const handleBlur = () => {
         setIsEditing(false);
+        if (summary !== story.summary) {
+            onUpdate({ summary });
+        }
     };
+
+    const hasTasks = story.sub_issues && story.sub_issues.length > 0;
+
+    // Determine partial selection state
+    const selectedTaskCount = Object.values(selectionState.tasks || {}).filter(Boolean).length;
+    const isIndeterminate = !isSelected && selectedTaskCount > 0 && selectedTaskCount < (story.sub_issues?.length || 0);
 
     return (
-        <div className="ml-4 mt-2">
-            <div className="flex items-center space-x-2 p-2 rounded-md hover:bg-white/5 transition-colors group">
-                <button onClick={onExpand} className="p-0.5 hover:bg-white/10 rounded">
-                    {isExpanded ?
-                        <ChevronDown className="w-4 h-4 text-gray-400" /> :
-                        <ChevronRight className="w-4 h-4 text-gray-400" />
-                    }
-                </button>
+        <div className="relative">
+            {/* Tree connector line */}
+            <div className={`absolute left-[11px] top-0 w-px bg-gray-200 ${isLast && !isExpanded ? 'h-6' : 'h-full'}`}></div>
 
-                <input
-                    type="checkbox"
-                    checked={isSelected}
-                    onChange={onToggle}
-                    className="w-4 h-4 rounded border-gray-600 text-purple-500 focus:ring-purple-500 bg-gray-700"
-                />
+            <div className={`
+                flex items-start group relative py-2 pl-2 pr-2 rounded-lg transition-all duration-200
+                ${isSelected ? 'bg-blue-50/50' : 'hover:bg-gray-50'}
+            `}>
+                {/* Horizontal connector to parent */}
+                <div className="absolute left-[-13px] top-5 w-4 h-px bg-gray-200"></div>
 
-                <div className="flex-1">
+                <div className="flex items-center mt-0.5 mr-2">
+                    <button
+                        onClick={onExpand}
+                        disabled={!hasTasks}
+                        className={`p-0.5 rounded-md transition-colors ${hasTasks ? 'hover:bg-gray-200 text-gray-500' : 'text-transparent'}`}
+                    >
+                        {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                    </button>
+
+                    <button
+                        onClick={onToggle}
+                        className="ml-1 text-gray-400 hover:text-blue-500 transition-colors focus:outline-none relative"
+                    >
+                        {isSelected ? (
+                            <CheckSquare className="w-4 h-4 text-blue-500" />
+                        ) : isIndeterminate ? (
+                            <div className="relative w-4 h-4">
+                                <Square className="w-4 h-4" />
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                    <div className="w-2 h-2 bg-blue-500 rounded-sm"></div>
+                                </div>
+                            </div>
+                        ) : (
+                            <Square className="w-4 h-4" />
+                        )}
+                    </button>
+                </div>
+
+                <div className="flex-1 min-w-0">
                     <div className="flex items-center space-x-2">
-                        <span className="text-xs font-mono text-purple-400 bg-purple-400/10 px-1 rounded">STORY</span>
-                        {isEditing ? (
-                            <div className="flex items-center space-x-2 w-full">
+                        <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-purple-100 text-purple-700 uppercase tracking-wide">
+                            Story
+                        </span>
+                        <div className="flex-1 min-w-0">
+                            {isEditing ? (
                                 <input
                                     type="text"
                                     value={summary}
                                     onChange={(e) => setSummary(e.target.value)}
-                                    className="bg-gray-800 text-white px-2 py-1 rounded border border-gray-600 focus:outline-none focus:border-purple-500 text-sm flex-1"
+                                    onBlur={handleBlur}
+                                    autoFocus
+                                    className="w-full text-sm font-medium text-gray-900 border-none p-0 focus:ring-0 bg-transparent"
                                 />
-                                <input
-                                    type="number"
-                                    value={points}
-                                    onChange={(e) => setPoints(Number(e.target.value))}
-                                    className="bg-gray-800 text-white px-2 py-1 rounded border border-gray-600 focus:outline-none focus:border-purple-500 text-sm w-16"
-                                />
-                            </div>
-                        ) : (
-                            <>
-                                <span className="text-sm font-medium text-gray-200">{story.summary}</span>
-                                <span className="text-xs text-gray-500">({story.story_points} pts)</span>
-                            </>
-                        )}
+                            ) : (
+                                <h4
+                                    onClick={() => setIsEditing(true)}
+                                    className="text-sm font-medium text-gray-900 truncate cursor-text"
+                                >
+                                    {story.summary}
+                                </h4>
+                            )}
+                        </div>
+                        <div className="flex items-center text-xs text-gray-400 space-x-3">
+                            {story.story_points && (
+                                <span className="bg-gray-100 px-2 py-0.5 rounded-full text-gray-600 font-medium">
+                                    {story.story_points} pts
+                                </span>
+                            )}
+                            <span>{story.priority || 'Medium'}</span>
+                        </div>
                     </div>
-                </div>
-
-                <div className="flex items-center space-x-2">
-                    {isEditing ? (
-                        <>
-                            <button onClick={handleSave} className="p-1 hover:bg-green-500/20 text-green-400 rounded">
-                                <Check className="w-4 h-4" />
-                            </button>
-                            <button onClick={handleCancel} className="p-1 hover:bg-red-500/20 text-red-400 rounded">
-                                <X className="w-4 h-4" />
-                            </button>
-                        </>
-                    ) : (
-                        <button onClick={() => setIsEditing(true)} className="p-1 hover:bg-white/10 text-gray-400 rounded opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Edit2 className="w-3 h-3" />
-                        </button>
-                    )}
                 </div>
             </div>
 
-            {isExpanded && (
-                <div className="ml-6 border-l-2 border-white/5 space-y-1 mt-1">
-                    {story.sub_issues.map((task, idx) => (
+            {/* Children Tasks */}
+            {isExpanded && hasTasks && (
+                <div className="ml-6 pl-2 border-l border-transparent"> {/* Offset for children */}
+                    {story.sub_issues.map((task, index) => (
                         <TaskItem
-                            key={idx}
+                            key={index}
                             task={task}
-                            isSelected={selectionState[idx] || false}
-                            onToggle={() => onToggleTask(idx)}
+                            isSelected={!!selectionState.tasks?.[index] || isSelected}
+                            onToggle={() => onToggleTask(index)}
+                            onUpdate={(updates) => onUpdateTask(index, updates)}
+                            isLast={index === (story.sub_issues?.length || 0) - 1}
                         />
                     ))}
                 </div>

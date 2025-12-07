@@ -64,7 +64,7 @@ const Dashboard = () => {
   };
 
   return (
-    <div>
+    <div className="h-full overflow-y-auto p-6">
       <h1>Dashboard</h1>
       <p>Cloud ID: {cloudId}</p>
       <p>Jira integration is live.</p>
