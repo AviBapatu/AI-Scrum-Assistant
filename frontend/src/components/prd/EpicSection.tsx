@@ -1,28 +1,23 @@
-import React, { useState } from 'react';
-import { ChevronRight, ChevronDown, Layers, Edit2, Check, X } from 'lucide-react';
-import type { EpicSuggestion } from '../../types/prd.types';
+import React, { useState, useEffect } from 'react';
+import { Layers, ChevronRight, ChevronDown, CheckSquare, Square } from 'lucide-react';
+import type { EpicSuggestion, StorySuggestion, TaskSuggestion } from '../../types/prd.types';
 import { StoryItem } from './StoryItem';
+import { usePRDSelection } from '../../hooks/usePRDSelection';
 
 interface EpicSectionProps {
     epic: EpicSuggestion;
     epicIndex: number;
     isSelected: boolean;
     isExpanded: boolean;
-    selectionState: {
-        stories: {
-            [storyIndex: number]: {
-                selected: boolean;
-                tasks: { [taskIndex: number]: boolean };
-            }
-        }
-    };
-    expandedState: { [id: string]: boolean };
+    selectionInfo: ReturnType<typeof usePRDSelection>;
     onToggle: () => void;
     onToggleStory: (storyIndex: number) => void;
     onToggleTask: (storyIndex: number, taskIndex: number) => void;
-    onExpand: (id: string) => void;
+    onExpand: () => void;
+    onExpandStory: (id: string) => void;
     onUpdate: (updates: Partial<EpicSuggestion>) => void;
-    onUpdateStory: (storyIndex: number, updates: any) => void;
+    onUpdateStory: (storyIndex: number, updates: Partial<StorySuggestion>) => void;
+    onUpdateTask: (storyIndex: number, taskIndex: number, updates: Partial<TaskSuggestion>) => void;
 }
 
 export const EpicSection: React.FC<EpicSectionProps> = ({
@@ -30,102 +25,124 @@ export const EpicSection: React.FC<EpicSectionProps> = ({
     epicIndex,
     isSelected,
     isExpanded,
-    selectionState,
-    expandedState,
+    selectionInfo,
     onToggle,
     onToggleStory,
     onToggleTask,
     onExpand,
+    onExpandStory,
     onUpdate,
-    onUpdateStory
+    onUpdateStory,
+    onUpdateTask
 }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [title, setTitle] = useState(epic.title);
 
-    const handleSave = () => {
-        onUpdate({ title });
+    useEffect(() => {
+        setTitle(epic.title);
+    }, [epic.title]);
+
+    const handleBlur = () => {
         setIsEditing(false);
+        if (title !== epic.title) {
+            onUpdate({ title });
+        }
     };
 
-    const handleCancel = () => {
-        setTitle(epic.title);
-        setIsEditing(false);
-    };
+    const hasStories = epic.issues && epic.issues.length > 0;
+
+    // Calculate intermediate state
+    const selectedStoryCount = Object.values(selectionInfo.selection[epicIndex]?.stories || {}).filter(s => s.selected).length;
+    const isIndeterminate = !isSelected && selectedStoryCount > 0 && selectedStoryCount < epic.issues.length;
 
     return (
-        <div className="border border-white/10 rounded-lg bg-gray-900/50 mb-4 overflow-hidden">
-            <div className="flex items-center space-x-3 p-4 bg-white/5 border-b border-white/5">
+        <div className="mb-4 bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden transition-all duration-200 hover:shadow-md">
+            {/* Header / Epic Card */}
+            <div className={`
+                p-4 flex items-start space-x-3 
+                ${isExpanded ? 'bg-gray-50/50 border-b border-gray-100' : 'bg-white'}
+                transition-colors
+            `}>
                 <button
-                    onClick={() => onExpand(`epic-${epicIndex}`)}
-                    className="p-1 hover:bg-white/10 rounded transition-colors"
+                    onClick={onExpand}
+                    className="mt-1 text-gray-400 hover:text-gray-600 transition-colors"
                 >
-                    {isExpanded ?
-                        <ChevronDown className="w-5 h-5 text-gray-400" /> :
-                        <ChevronRight className="w-5 h-5 text-gray-400" />
-                    }
+                    {isExpanded ? <ChevronDown className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
                 </button>
 
-                <input
-                    type="checkbox"
-                    checked={isSelected}
-                    onChange={onToggle}
-                    className="w-5 h-5 rounded border-gray-600 text-green-500 focus:ring-green-500 bg-gray-700"
-                />
-
-                <div className="flex-1">
-                    <div className="flex items-center space-x-2">
-                        <Layers className="w-4 h-4 text-green-400" />
-                        {isEditing ? (
-                            <input
-                                type="text"
-                                value={title}
-                                onChange={(e) => setTitle(e.target.value)}
-                                className="bg-gray-800 text-white px-2 py-1 rounded border border-gray-600 focus:outline-none focus:border-blue-500 text-sm w-full"
-                                autoFocus
-                            />
-                        ) : (
-                            <h3 className="text-sm font-semibold text-gray-100">{epic.title}</h3>
-                        )}
+                <div className="flex-1 min-w-0">
+                    <div className="flex items-center space-x-2 mb-1">
+                        <span className="bg-purple-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider">
+                            Epic
+                        </span>
+                        <div className="flex-1">
+                            {isEditing ? (
+                                <input
+                                    type="text"
+                                    value={title}
+                                    onChange={(e) => setTitle(e.target.value)}
+                                    onBlur={handleBlur}
+                                    autoFocus
+                                    className="w-full text-base font-semibold text-gray-900 border-none p-0 focus:ring-0 bg-transparent"
+                                />
+                            ) : (
+                                <h3
+                                    onClick={() => setIsEditing(true)}
+                                    className="text-base font-semibold text-gray-900 truncate cursor-text hover:text-blue-600 transition-colors"
+                                >
+                                    {epic.title}
+                                </h3>
+                            )}
+                        </div>
                     </div>
+                    <p className="text-sm text-gray-500 line-clamp-2 pl-1">
+                        {epic.description}
+                    </p>
                 </div>
 
-                <div className="flex items-center space-x-2">
-                    {isEditing ? (
-                        <>
-                            <button onClick={handleSave} className="p-1 hover:bg-green-500/20 text-green-400 rounded">
-                                <Check className="w-4 h-4" />
-                            </button>
-                            <button onClick={handleCancel} className="p-1 hover:bg-red-500/20 text-red-400 rounded">
-                                <X className="w-4 h-4" />
-                            </button>
-                        </>
+                <button
+                    onClick={onToggle}
+                    className="mt-1 text-gray-400 hover:text-blue-500 transition-colors relative"
+                >
+                    {isSelected ? (
+                        <CheckSquare className="w-5 h-5 text-blue-500" />
+                    ) : isIndeterminate ? (
+                        <div className="relative w-5 h-5">
+                            <Square className="w-5 h-5" />
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <div className="w-2.5 h-2.5 bg-blue-500 rounded-sm"></div>
+                            </div>
+                        </div>
                     ) : (
-                        <button onClick={() => setIsEditing(true)} className="p-1 hover:bg-white/10 text-gray-400 rounded opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Edit2 className="w-3 h-3" />
-                        </button>
+                        <Square className="w-5 h-5" />
                     )}
-                </div>
-
-                <span className="text-xs text-gray-500 px-2 bg-black/20 rounded">
-                    {epic.issues.length} stories
-                </span>
+                </button>
             </div>
 
-            {isExpanded && (
-                <div className="p-2 bg-black/20">
-                    {epic.issues.map((story, storyIdx) => (
+            {/* Stories List */}
+            {isExpanded && hasStories && (
+                <div className="p-2 space-y-1 bg-white">
+                    {epic.issues.map((story, storyIndex) => (
                         <StoryItem
-                            key={storyIdx}
+                            key={storyIndex}
                             story={story}
-                            isSelected={selectionState.stories[storyIdx]?.selected || false}
-                            isExpanded={expandedState[`story-${epicIndex}-${storyIdx}`] || false}
-                            selectionState={selectionState.stories[storyIdx]?.tasks || {}}
-                            onToggle={() => onToggleStory(storyIdx)}
-                            onToggleTask={(taskIdx) => onToggleTask(storyIdx, taskIdx)}
-                            onExpand={() => onExpand(`story-${epicIndex}-${storyIdx}`)}
-                            onUpdate={(updates) => onUpdateStory(storyIdx, updates)}
+                            isSelected={!!selectionInfo.selection[epicIndex]?.stories?.[storyIndex]?.selected}
+                            selectionState={selectionInfo.selection[epicIndex]?.stories?.[storyIndex] || { selected: false, tasks: {} }}
+                            isExpanded={!!selectionInfo.expanded[`story-${epicIndex}-${storyIndex}`]}
+                            onToggle={() => onToggleStory(storyIndex)}
+                            onToggleTask={(taskIndex) => onToggleTask(storyIndex, taskIndex)}
+                            onExpand={() => onExpandStory(`story-${epicIndex}-${storyIndex}`)}
+                            onUpdate={(updates) => onUpdateStory(storyIndex, updates)}
+                            onUpdateTask={(taskIndex, updates) => onUpdateTask(storyIndex, taskIndex, updates)}
+                            isLast={storyIndex === epic.issues.length - 1}
                         />
                     ))}
+                </div>
+            )}
+
+            {isExpanded && !hasStories && (
+                <div className="p-8 text-center text-gray-400 text-sm">
+                    No user stories generated for this epic.
                 </div>
             )}
         </div>

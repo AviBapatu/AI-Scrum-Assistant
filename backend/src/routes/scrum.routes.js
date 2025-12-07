@@ -220,6 +220,69 @@ router.get("/standup", getDailyStandupReport);
  */
 router.get("/retrospective", getSprintRetrospectiveReport);
 
+import {
+  getPRDSessions,
+  createPRDSession,
+  getPRDSession,
+  updatePRDSession,
+  deletePRDSession,
+} from "../controllers/prd.controller.js";
+
+/**
+ * @openapi
+ * /api/v1/scrum/prd/sessions:
+ *   get:
+ *     summary: Get all PRD sessions
+ *     tags:
+ *       - PRD
+ *     responses:
+ *       200:
+ *         description: List of PRD sessions
+ */
+router.get("/prd/sessions", auth, getPRDSessions);
+
+/**
+ * @openapi
+ * /api/v1/scrum/prd/session:
+ *   post:
+ *     summary: Create a new PRD session
+ *     tags:
+ *       - PRD
+ *     responses:
+ *       201:
+ *         description: Created session
+ */
+router.post("/prd/session", auth, createPRDSession);
+
+/**
+ * @openapi
+ * /api/v1/scrum/prd/session/{sessionId}:
+ *   get:
+ *     summary: Get a specific PRD session
+ *     tags:
+ *       - PRD
+ *     responses:
+ *       200:
+ *         description: PRD session details
+ *   patch:
+ *     summary: Update a PRD session
+ *     tags:
+ *       - PRD
+ *     responses:
+ *       200:
+ *         description: Updated session
+ *   delete:
+ *     summary: Delete a PRD session
+ *     tags:
+ *       - PRD
+ *     responses:
+ *       200:
+ *         description: Session deleted
+ */
+router.get("/prd/session/:sessionId", auth, getPRDSession);
+router.patch("/prd/session/:sessionId", auth, updatePRDSession);
+router.delete("/prd/session/:sessionId", auth, deletePRDSession);
+
 router.post("/webhooks/jira", handleJiraWebhook);
 
 export default router;

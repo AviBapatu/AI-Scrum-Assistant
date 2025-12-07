@@ -5,3 +5,10 @@ export interface ChatMessage {
     createdAt: string | number;
     meta?: any;
 }
+
+export interface ChatSession {
+    _id: string;
+    title: string;
+    createdAt?: string;
+    userId?: string;
+}

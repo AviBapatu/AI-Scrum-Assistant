@@ -1,4 +1,12 @@
-import type { PRDSuggestionsResponse, PushToJiraRequest, PushToJiraResponse } from '../types/prd.types';
+
+import type {
+    PRDSuggestionsResponse,
+    PushToJiraRequest,
+    PushToJiraResponse,
+    PRDSession,
+    CreatePRDSessionRequest,
+    UpdatePRDSessionRequest
+} from '../types/prd.types';
 
 const API_BASE_URL = '/api/v1/scrum';
 
@@ -9,7 +17,6 @@ export const uploadPRD = async (file: File): Promise<PRDSuggestionsResponse> => 
     const response = await fetch(`${API_BASE_URL}/suggestions`, {
         method: 'POST',
         headers: {
-            // 'Content-Type': 'multipart/form-data', // Browser sets this automatically with boundary
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },
         body: formData,
@@ -40,4 +47,83 @@ export const pushSuggestionsToJira = async (payload: PushToJiraRequest): Promise
     }
 
     return response.json();
+};
+
+// --- PRD Sessions ---
+
+export const getPRDSessions = async (): Promise<PRDSession[]> => {
+    const response = await fetch(`${API_BASE_URL}/prd/sessions`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to fetch PRD sessions');
+    }
+
+    return response.json();
+};
+
+export const createPRDSession = async (data: CreatePRDSessionRequest): Promise<PRDSession> => {
+    const response = await fetch(`${API_BASE_URL}/prd/session`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to create PRD session');
+    }
+
+    return response.json();
+};
+
+export const getPRDSession = async (sessionId: string): Promise<PRDSession> => {
+    const response = await fetch(`${API_BASE_URL}/prd/session/${sessionId}`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to fetch PRD session details');
+    }
+
+    return response.json();
+};
+
+export const updatePRDSession = async (sessionId: string, data: UpdatePRDSessionRequest): Promise<PRDSession> => {
+    const response = await fetch(`${API_BASE_URL}/prd/session/${sessionId}`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to update PRD session');
+    }
+
+    return response.json();
+};
+
+export const deletePRDSession = async (sessionId: string): Promise<void> => {
+    const response = await fetch(`${API_BASE_URL}/prd/session/${sessionId}`, {
+        method: 'DELETE',
+        headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to delete PRD session');
+    }
 };
