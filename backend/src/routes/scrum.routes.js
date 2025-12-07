@@ -9,7 +9,14 @@ import {
   getSprintRetrospectiveReport,
 } from "../controllers/scrum.controller.js";
 import { handleJiraWebhook } from "../controllers/webhook.controller.js";
-// import { protectRoute } from "../middleware/auth.middleware.js"; // Assuming this exists or similar
+import { auth } from "../middleware/auth.js";
+import {
+  getSessions,
+  createSession,
+  renameSession,
+  deleteSession,
+  sendMessage,
+} from "../controllers/chat.controller.js";
 
 const storage = multer.memoryStorage();
 const upload = multer({
