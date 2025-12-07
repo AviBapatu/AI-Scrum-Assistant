@@ -11,6 +11,8 @@ interface HierarchyTreeProps {
     onToggleStory: (epicIndex: number, storyIndex: number) => void;
     onToggleTask: (epicIndex: number, storyIndex: number, taskIndex: number) => void;
     onExpand: (id: string) => void;
+    onUpdateEpic: (index: number, updates: Partial<EpicSuggestion>) => void;
+    onUpdateStory: (epicIndex: number, storyIndex: number, updates: any) => void;
 }
 
 export const HierarchyTree: React.FC<HierarchyTreeProps> = ({
@@ -20,7 +22,9 @@ export const HierarchyTree: React.FC<HierarchyTreeProps> = ({
     onToggleEpic,
     onToggleStory,
     onToggleTask,
-    onExpand
+    onExpand,
+    onUpdateEpic,
+    onUpdateStory
 }) => {
     if (!epics.length) {
         return (
@@ -45,6 +49,8 @@ export const HierarchyTree: React.FC<HierarchyTreeProps> = ({
                     onToggleStory={(storyIndex) => onToggleStory(epicIndex, storyIndex)}
                     onToggleTask={(storyIndex, taskIndex) => onToggleTask(epicIndex, storyIndex, taskIndex)}
                     onExpand={onExpand}
+                    onUpdate={(updates) => onUpdateEpic(epicIndex, updates)}
+                    onUpdateStory={(storyIndex, updates) => onUpdateStory(epicIndex, storyIndex, updates)}
                 />
             ))}
         </div>
